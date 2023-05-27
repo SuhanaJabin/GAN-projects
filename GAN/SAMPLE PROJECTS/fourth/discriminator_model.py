@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 
+
 class Block(nn.Module):
     def __init__(self,in_channels, out_channels, stride):
         super().__init__() #gets all the functionalities of the nn.Module to the block
@@ -32,3 +33,28 @@ class Discriminator(nn.Module):
             nn.LeakyReLU(0.2)
 
         )
+        layers = []
+        in_channels = features[0]
+        for feature in features[1:]:
+            layers.append(Block(in_channels, feature, stride=1 if feature[-1] else 2))
+            in_channels = feature
+        layers.append(nn.Conv2d(in_channels,1,kernel_size=4, stride=1, padding=1, padding_mode="reflect"))
+        self.mode = nn.Sequential(*layers)
+    
+
+    def forward(self,x):
+        x = self.initial(x)
+        return torch.sigmoid(self.mode(x))
+    
+    def test():
+        x = torch.randn((5,3,256,256))
+        model = Discriminator(in_channels=3)
+        preds = model(x)
+        print(preds.shape)
+
+    if __name__ == "__main__":
+        test()
+
+
+        
+        
